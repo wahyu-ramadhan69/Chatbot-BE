@@ -1,0 +1,8 @@
+git clone "https://github.com/wahyu-ramadhan69/Chatbot-BE.git"
+buka terminal di project lalu ketik "python3 -m venv venv"
+ketik lagi "source venv/bin/activate"
+ketik lagi "pip install -r requirements.txt"
+masukkan dokumen ke dalam folder /rag/documents
+masuk ke directory "chatbot-be"
+lalu ketik "python rag/embedings.py"
+lalu terakhir jalankan "python app.py"
