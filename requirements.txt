@@ -1,0 +1,8 @@
+flask
+flask-cors
+openai>=1.40.0
+PyMuPDF
+python-dotenv
+chromadb
+faiss-cpu
+tiktoken
