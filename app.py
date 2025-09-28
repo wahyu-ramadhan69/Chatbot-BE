@@ -8,6 +8,8 @@ import uuid
 import json
 import traceback
 from dotenv import load_dotenv
+import logging
+import sys
 
 # ---- RAG retriever kamu ----
 from rag.retriever import retrieve_docs
@@ -16,31 +18,61 @@ from rag.retriever import retrieve_docs
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
 
-DEBUG_VERBOSE = os.getenv("DEBUG_VERBOSE", "1") == "1"
+# meski ada DEBUG_VERBOSE, kita TETAP tidak akan kirim log ke console
+DEBUG_VERBOSE = os.getenv("DEBUG_VERBOSE", "0") == "1"
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+
+# ====== LOGGING: ke file saja, tidak ke terminal ======
+LOG_FILE = os.getenv("LOG_FILE", "app.log")
+
+# Hapus semua handler root logger agar tidak ada StreamHandler ke stderr
+root_logger = logging.getLogger()
+for h in list(root_logger.handlers):
+    root_logger.removeHandler(h)
+
+# Buat file handler
+file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
+file_handler.setLevel(logging.DEBUG if DEBUG_VERBOSE else logging.INFO)
+file_handler.setFormatter(logging.Formatter(
+    fmt="[%(asctime)s] %(levelname)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+))
+
+root_logger.addHandler(file_handler)
+root_logger.setLevel(logging.DEBUG if DEBUG_VERBOSE else logging.INFO)
+
+# Matikan semua logger bawaan werkzeug agar tidak mencetak "Running on ..." dll.
+for name in ("werkzeug", "werkzeug.serving", "werkzeug._internal"):
+    lg = logging.getLogger(name)
+    lg.handlers = []           # pastikan tidak mewarisi handler ke console
+    lg.propagate = False
+    lg.disabled = True
+    lg.setLevel(logging.CRITICAL)
+
+# Matikan banner Flask CLI kalau ada
+try:
+    import flask.cli as flask_cli
+    flask_cli.show_server_banner = lambda *args, **kwargs: None
+except Exception:
+    pass
 
 client = OpenAI()
 app = Flask(__name__)
+# CORS tetap aktif
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ====== SYSTEM PROMPT ======
-SYSTEM_MSG = """Kamu asisten Mall Pelayanan Public Kota Bengkulu. Jawab dalam Bahasa Indonesia.
+SYSTEM_MSG = """Kamu adalah asisten Mall Pelayanan Public Kota Bengkulu. Jawab dalam Bahasa Indonesia.
+
+Aturan penting:
+1. jangan pernah mengarang jawaban
+2. jawab hanya berdasarkan informasi yang tersedia
 
 Format jawaban:
-1. Mulai dengan ## [Judul]
-2. Setiap poin baru pisahkan dengan baris kosong
-3. Gunakan a. b. c. untuk sub-poin
-4. Gunakan **bold** untuk penekanan
-5. Pastikan ada jarak antar bagian
-
-Contoh format:
-## Cara Login Nextcloud
-
-a. Sambungkan kabel LAN ke komputer
-
-b. Buka browser dan akses https://drive.bcaf.co.id
-
-c. Login dengan username dan password LAN
+1. Setiap poin baru pisahkan dengan baris kosong
+2. Gunakan a. b. c. untuk sub-poin
+3. Gunakan **bold** untuk penekanan
+4. Pastikan ada jarak antar bagian
 """
 
 # ====== HELPERS ======
@@ -63,7 +95,7 @@ def attach_request_id():
     g.request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
     g.start_time = time.time()
 
-def log_event(event: str, **kwargs):
+def log_event(event: str, level: str = "info", **kwargs):
     payload = {
         "event": event,
         "request_id": getattr(g, "request_id", "n/a"),
@@ -72,14 +104,15 @@ def log_event(event: str, **kwargs):
         "elapsed_ms": round((time.time() - getattr(g, "start_time", time.time())) * 1000, 1),
         **kwargs,
     }
-    try:
-        print("[BE]", json.dumps(payload, ensure_ascii=False))
-    except Exception:
-        print("[BE]", payload)
+    if level == "debug":
+        logging.getLogger().debug(json.dumps(payload, ensure_ascii=False))
+    else:
+        logging.getLogger().info(json.dumps(payload, ensure_ascii=False))
 
 # ====== ROUTES ======
 @app.route("/", methods=["GET"])
 def index():
+    # jangan print ke console—biarkan client yang melihat
     return "<h1>🤖 Chatbot RAG API</h1><p>POST /ask atau /ask-stream</p>"
 
 @app.route("/ask", methods=["POST"])
@@ -96,11 +129,11 @@ def ask():
 
         docs = retrieve_docs(question)
         if DEBUG_VERBOSE:
-            log_event("rag_docs", docs_preview=docs[:3], docs_count=len(docs))
+            log_event("rag_docs", level="debug", docs_preview=docs[:3], docs_count=len(docs))
 
         messages = build_messages(question, docs)
         if DEBUG_VERBOSE:
-            log_event("openai_messages", messages=messages)
+            log_event("openai_messages", level="debug", messages=messages)
 
         oa = client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -109,8 +142,7 @@ def ask():
         )
 
         if DEBUG_VERBOSE:
-            # hati-hati ukuran; batasi agar console tidak banjir
-            log_event("openai_raw_response", raw=str(oa)[:5000])
+            log_event("openai_raw_response", level="debug", raw=str(oa)[:5000])
 
         answer = (oa.choices[0].message.content or "").strip()
         log_event("final_answer_nonstream", answer_preview=answer[:800], total_len=len(answer))
@@ -142,11 +174,11 @@ def ask_stream():
 
         docs = retrieve_docs(question)
         if DEBUG_VERBOSE:
-            log_event("rag_docs", docs_preview=docs[:3], docs_count=len(docs))
+            log_event("rag_docs", level="debug", docs_preview=docs[:3], docs_count=len(docs))
 
         messages = build_messages(question, docs)
         if DEBUG_VERBOSE:
-            log_event("openai_messages", messages=messages)
+            log_event("openai_messages", level="debug", messages=messages)
 
         @stream_with_context
         def generate():
@@ -159,7 +191,6 @@ def ask_stream():
                     stream=True,
                 )
                 for chunk in stream:
-                    # struktur SDK openai==1.x
                     choice = chunk.choices[0]
                     delta = getattr(choice, "delta", None)
                     if not delta:
@@ -170,8 +201,7 @@ def ask_stream():
 
                     full_text += piece
                     if DEBUG_VERBOSE and piece.strip():
-                        # potong agar tidak kebanyakan
-                        log_event("stream_chunk", piece=piece[:200])
+                        log_event("stream_chunk", level="debug", piece=piece[:200])
 
                     yield sse_pack_json({"type": "chunk", "content": piece})
 
@@ -206,5 +236,8 @@ def ask_stream():
 
 # ====== MAIN ======
 if __name__ == "__main__":
-    # debug=True untuk hot-reload & log lebih jelas saat dev
-    app.run(host="127.0.0.1", port=5000, debug=True, threaded=True)
+    host = os.getenv("HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", 5000))
+    app.run(host=host, port=port, threaded=True)
+    # Penting: debug=False + use_reloader=False supaya werkzeug tidak cetak apa pun
+    # app.run(host=host, port=port, debug=True, use_reloader=True, threaded=True)
