@@ -18,47 +18,42 @@ from rag.retriever import retrieve_docs
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
 
-# meski ada DEBUG_VERBOSE, kita TETAP tidak akan kirim log ke console
 DEBUG_VERBOSE = os.getenv("DEBUG_VERBOSE", "0") == "1"
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
-
-# ====== LOGGING: ke file saja, tidak ke terminal ======
 LOG_FILE = os.getenv("LOG_FILE", "app.log")
 
-# Hapus semua handler root logger agar tidak ada StreamHandler ke stderr
+# ====== LOGGING: Minimal Console + File ======
 root_logger = logging.getLogger()
 for h in list(root_logger.handlers):
     root_logger.removeHandler(h)
 
-# Buat file handler
-file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
-file_handler.setLevel(logging.DEBUG if DEBUG_VERBOSE else logging.INFO)
-file_handler.setFormatter(logging.Formatter(
-    fmt="[%(asctime)s] %(levelname)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
+# Console handler - hanya untuk error dan startup
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.WARNING)  # Hanya WARNING dan ERROR
+console_handler.setFormatter(logging.Formatter(
+    fmt="%(levelname)s: %(message)s"
 ))
+root_logger.addHandler(console_handler)
 
-root_logger.addHandler(file_handler)
-root_logger.setLevel(logging.DEBUG if DEBUG_VERBOSE else logging.INFO)
+# File handler - untuk log detail (opsional)
+if LOG_FILE:
+    file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(logging.Formatter(
+        fmt="[%(asctime)s] %(levelname)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    ))
+    root_logger.addHandler(file_handler)
 
-# Matikan semua logger bawaan werkzeug agar tidak mencetak "Running on ..." dll.
-for name in ("werkzeug", "werkzeug.serving", "werkzeug._internal"):
-    lg = logging.getLogger(name)
-    lg.handlers = []           # pastikan tidak mewarisi handler ke console
-    lg.propagate = False
-    lg.disabled = True
-    lg.setLevel(logging.CRITICAL)
+root_logger.setLevel(logging.INFO)
 
-# Matikan banner Flask CLI kalau ada
-try:
-    import flask.cli as flask_cli
-    flask_cli.show_server_banner = lambda *args, **kwargs: None
-except Exception:
-    pass
+# Nonaktifkan werkzeug request logging
+werkzeug_logger = logging.getLogger("werkzeug")
+werkzeug_logger.setLevel(logging.ERROR)
+werkzeug_logger.propagate = False
 
 client = OpenAI()
 app = Flask(__name__)
-# CORS tetap aktif
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ====== SYSTEM PROMPT ======
@@ -69,10 +64,12 @@ Aturan penting:
 2. jawab hanya berdasarkan informasi yang tersedia
 
 Format jawaban:
-1. Setiap poin baru pisahkan dengan baris kosong
-2. Gunakan a. b. c. untuk sub-poin
-3. Gunakan **bold** untuk penekanan
-4. Pastikan ada jarak antar bagian
+1. Jika pada dokumen tidak menggunakan point list, kamu boleh menjawab dengan paragraf biasa
+2. Jika pada dokumen menggunakan point list, kamu harus menjawab dengan point list juga
+3. Setiap poin baru pisahkan dengan baris kosong
+4. Gunakan a. b. c. untuk sub-poin
+5. Gunakan **bold** untuk penekanan
+6. Pastikan ada jarak antar bagian
 """
 
 # ====== HELPERS ======
@@ -95,24 +92,24 @@ def attach_request_id():
     g.request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
     g.start_time = time.time()
 
-def log_event(event: str, level: str = "info", **kwargs):
-    payload = {
-        "event": event,
-        "request_id": getattr(g, "request_id", "n/a"),
-        "path": request.path if request else "",
-        "method": request.method if request else "",
-        "elapsed_ms": round((time.time() - getattr(g, "start_time", time.time())) * 1000, 1),
-        **kwargs,
-    }
-    if level == "debug":
-        logging.getLogger().debug(json.dumps(payload, ensure_ascii=False))
+def log_error(message: str, error: Exception = None):
+    """Log error saja ke console dan file"""
+    if error:
+        logging.error(f"{message}: {str(error)}")
+        if DEBUG_VERBOSE:
+            logging.error(traceback.format_exc())
     else:
-        logging.getLogger().info(json.dumps(payload, ensure_ascii=False))
+        logging.error(message)
+
+def log_debug(message: str, **kwargs):
+    """Log detail hanya jika DEBUG_VERBOSE aktif"""
+    if DEBUG_VERBOSE:
+        payload = {"message": message, **kwargs}
+        logging.debug(json.dumps(payload, ensure_ascii=False))
 
 # ====== ROUTES ======
 @app.route("/", methods=["GET"])
 def index():
-    # jangan print ke console—biarkan client yang melihat
     return "<h1>🤖 Chatbot RAG API</h1><p>POST /ask atau /ask-stream</p>"
 
 @app.route("/ask", methods=["POST"])
@@ -125,15 +122,13 @@ def ask():
             resp.headers["X-Request-ID"] = g.request_id
             return resp, 400
 
-        log_event("ask_received", question=question)
+        log_debug("ask_received", question=question)
 
         docs = retrieve_docs(question)
-        if DEBUG_VERBOSE:
-            log_event("rag_docs", level="debug", docs_preview=docs[:3], docs_count=len(docs))
+        log_debug("rag_docs", docs_count=len(docs))
 
         messages = build_messages(question, docs)
-        if DEBUG_VERBOSE:
-            log_event("openai_messages", level="debug", messages=messages)
+        log_debug("openai_request", messages_count=len(messages))
 
         oa = client.chat.completions.create(
             model=OPENAI_MODEL,
@@ -141,18 +136,15 @@ def ask():
             temperature=0.1,
         )
 
-        if DEBUG_VERBOSE:
-            log_event("openai_raw_response", level="debug", raw=str(oa)[:5000])
-
         answer = (oa.choices[0].message.content or "").strip()
-        log_event("final_answer_nonstream", answer_preview=answer[:800], total_len=len(answer))
+        log_debug("answer_generated", answer_len=len(answer))
 
         response = jsonify({"answer": answer})
         response.headers["X-Request-ID"] = g.request_id
         return response
 
     except Exception as e:
-        log_event("ask_error", error=str(e), traceback=traceback.format_exc())
+        log_error("Error in /ask", e)
         resp = jsonify({"error": str(e)})
         resp.headers["X-Request-ID"] = g.request_id
         return resp, 500
@@ -170,15 +162,13 @@ def ask_stream():
             resp.headers["X-Request-ID"] = g.request_id
             return resp
 
-        log_event("ask_stream_received", question=question)
+        log_debug("ask_stream_received", question=question)
 
         docs = retrieve_docs(question)
-        if DEBUG_VERBOSE:
-            log_event("rag_docs", level="debug", docs_preview=docs[:3], docs_count=len(docs))
+        log_debug("rag_docs", docs_count=len(docs))
 
         messages = build_messages(question, docs)
-        if DEBUG_VERBOSE:
-            log_event("openai_messages", level="debug", messages=messages)
+        log_debug("openai_request", messages_count=len(messages))
 
         @stream_with_context
         def generate():
@@ -200,17 +190,14 @@ def ask_stream():
                         continue
 
                     full_text += piece
-                    if DEBUG_VERBOSE and piece.strip():
-                        log_event("stream_chunk", level="debug", piece=piece[:200])
-
                     yield sse_pack_json({"type": "chunk", "content": piece})
 
             except Exception as e:
-                log_event("stream_error", error=str(e), traceback=traceback.format_exc())
+                log_error("Stream error", e)
                 yield sse_pack_json({"type": "error", "message": str(e)})
 
             finally:
-                log_event("final_answer_stream", final_preview=full_text[:1000], total_len=len(full_text))
+                log_debug("stream_completed", answer_len=len(full_text))
                 yield sse_pack_json({"type": "done"})
 
         resp = Response(
@@ -226,7 +213,7 @@ def ask_stream():
         return resp
 
     except Exception as e:
-        log_event("ask_stream_outer_error", error=str(e), traceback=traceback.format_exc())
+        log_error("Error in /ask-stream", e)
         def err():
             yield sse_pack_json({"type": "error", "message": str(e)})
             yield sse_pack_json({"type": "done"})
@@ -238,6 +225,6 @@ def ask_stream():
 if __name__ == "__main__":
     host = os.getenv("HOST", "127.0.0.1")
     port = int(os.getenv("PORT", 5000))
-    app.run(host=host, port=port, threaded=True)
-    # Penting: debug=False + use_reloader=False supaya werkzeug tidak cetak apa pun
-    # app.run(host=host, port=port, debug=True, use_reloader=True, threaded=True)
+    
+    print(f"🚀 Server running on http://{host}:{port}")
+    app.run(host=host, port=port, debug=False, threaded=True)

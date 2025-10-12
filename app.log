@@ -1,0 +1,80 @@
+[2025-09-28 11:55:07] INFO: {"event": "ask_stream_received", "request_id": "71211281-9bc4-460e-80e5-7bad5889e645", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.2, "question": "siapa kamu"}
+[2025-09-28 11:55:08] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-09-28 11:55:09] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-09-28 11:55:09] INFO: {"event": "final_answer_stream", "request_id": "71211281-9bc4-460e-80e5-7bad5889e645", "path": "/ask-stream", "method": "POST", "elapsed_ms": 1841.8, "final_preview": "Saya adalah asisten Mall Pelayanan Public Kota Bengkulu.", "total_len": 56}
+[2025-09-28 11:55:19] INFO: {"event": "ask_stream_received", "request_id": "e7bb8c8d-653c-4cad-9dd8-585997bed8fe", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.2, "question": "siapa kamu"}
+[2025-09-28 11:55:21] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-09-28 11:55:22] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-09-28 11:55:22] INFO: {"event": "final_answer_stream", "request_id": "e7bb8c8d-653c-4cad-9dd8-585997bed8fe", "path": "/ask-stream", "method": "POST", "elapsed_ms": 2595.8, "final_preview": "Saya adalah asisten Mall Pelayanan Public Kota Bengkulu.", "total_len": 56}
+[2025-10-05 21:05:28] INFO: Starting server at http://127.0.0.1:5000 (debug=False)
+[2025-10-05 21:05:34] INFO: Starting server at http://127.0.0.1:5000 (debug=False)
+[2025-10-05 21:07:43] INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2025-10-05 21:07:43] INFO: [33mPress CTRL+C to quit[0m
+[2025-10-05 21:08:14] INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2025-10-05 21:08:14] INFO: [33mPress CTRL+C to quit[0m
+[2025-10-05 21:09:02] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:02] "GET / HTTP/1.1" 200 -
+[2025-10-05 21:09:02] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:02] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+[2025-10-05 21:09:11] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:11] "OPTIONS /ask-stream HTTP/1.1" 200 -
+[2025-10-05 21:09:11] INFO: {"event": "ask_stream_received", "request_id": "b5ee09a6-a149-495a-b9e8-987f1a6ca091", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.4, "question": "siapa kamu"}
+[2025-10-05 21:09:12] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-05 21:09:13] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-05 21:09:13] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:13] "POST /ask-stream HTTP/1.1" 200 -
+[2025-10-05 21:09:13] INFO: {"event": "final_answer_stream", "request_id": "b5ee09a6-a149-495a-b9e8-987f1a6ca091", "path": "/ask-stream", "method": "POST", "elapsed_ms": 1771.2, "final_preview": "Saya adalah asisten Mall Pelayanan Public Kota Bengkulu. Bagaimana saya bisa membantu Anda hari ini?", "total_len": 100}
+[2025-10-05 21:09:34] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:34] "OPTIONS /ask-stream HTTP/1.1" 200 -
+[2025-10-05 21:09:34] INFO: {"event": "ask_stream_received", "request_id": "2d66519b-3f6c-4eac-a374-07d7d3fa0e6d", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.2, "question": "apa saja yang kamu ketahui"}
+[2025-10-05 21:09:35] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-05 21:09:36] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-05 21:09:36] INFO: 127.0.0.1 - - [05/Oct/2025 21:09:36] "POST /ask-stream HTTP/1.1" 200 -
+[2025-10-05 21:09:38] INFO: {"event": "final_answer_stream", "request_id": "2d66519b-3f6c-4eac-a374-07d7d3fa0e6d", "path": "/ask-stream", "method": "POST", "elapsed_ms": 3932.7, "final_preview": "Yang saya ketahui berdasarkan informasi yang tersedia adalah:\n\n1. **Panduan Penggunaan Self Service**:\n   a. Jaringan yang dapat digunakan untuk mengakses self service adalah BCAF-USER-DEV dan BCAF-WIFI.\n   b. Untuk mengakses halaman self service server, pengguna perlu akses ke http://192.168.1.133/auth/login menggunakan browser.\n   c. Terdapat halaman user yang berisi informasi quota dan log terakhir yang dilakukan oleh user di server.\n   d. Terdapat menu pengajuan server yang memungkinkan pengguna untuk membuat server baru, melakukan clone server yang sudah ada, melakukan perubahan server, dan menghapus server yang sudah ada.\n   e. Setelah melakukan submit pengajuan, status pengajuan akan muncul seperti Waiting For Dept Head, Loading bar, Selesai, atau Error.\n   f. Setelah membuat server, pengguna dapat mengakses menu Console, Power off, Restart, dan Sync.\n\n2. **Panduan Penggunaan Nextcloud**:\n   a. Untuk login, pengguna perlu menyambungkan kabel LAN ke laptop atau PC, membuka browse", "total_len": 1666}
+[2025-10-12 12:46:19] INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2025-10-12 12:46:19] INFO: [33mPress CTRL+C to quit[0m
+[2025-10-12 12:46:50] INFO: 127.0.0.1 - - [12/Oct/2025 12:46:50] "OPTIONS /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:46:50] INFO: {"event": "ask_stream_received", "request_id": "fc6829f1-5be1-4dee-b5f5-74fa5ad7f1ef", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.6, "question": "siapa kamu"}
+[2025-10-12 12:46:52] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 12:46:53] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 12:46:53] INFO: 127.0.0.1 - - [12/Oct/2025 12:46:53] "POST /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:46:53] INFO: {"event": "final_answer_stream", "request_id": "fc6829f1-5be1-4dee-b5f5-74fa5ad7f1ef", "path": "/ask-stream", "method": "POST", "elapsed_ms": 3332.5, "final_preview": "Saya adalah asisten Mall Pelayanan Public Kota Bengkulu. Bagaimana saya bisa membantu Anda hari ini?", "total_len": 100}
+[2025-10-12 12:47:05] INFO: 127.0.0.1 - - [12/Oct/2025 12:47:05] "OPTIONS /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:47:05] INFO: {"event": "ask_stream_received", "request_id": "1c3e927a-1251-4d10-a52a-ecd9c7b789ed", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.2, "question": "apa saya informasi yang kamu ketahui"}
+[2025-10-12 12:47:06] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 12:47:08] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 12:47:08] INFO: 127.0.0.1 - - [12/Oct/2025 12:47:08] "POST /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:47:11] INFO: {"event": "final_answer_stream", "request_id": "1c3e927a-1251-4d10-a52a-ecd9c7b789ed", "path": "/ask-stream", "method": "POST", "elapsed_ms": 5698.2, "final_preview": "Berdasarkan informasi yang diberikan, berikut adalah informasi yang dapat saya berikan:\n\n1. Informasi mengenai **PANDUAN PENGGUNAAN SELF SERVICE**:\n   a. Jaringan yang dapat digunakan untuk mengakses self service adalah **BCAF-USER-DEV** dan **BCAF-WIFI**.\n   b. Untuk mengakses halaman self service server, pengguna perlu akses ke http://192.168.1.133/auth/login menggunakan browser.\n   c. Untuk login ke halaman self service, pengguna harus menggunakan credential ldap/lan dengan contoh username: Initial name dan password: Password wifi.\n   d. Halaman user berisi informasi quota dan log terakhir yang dilakukan oleh user di server.\n   e. Halaman pengajuan server memungkinkan pengguna untuk melakukan pengajuan server baru, clone server yang sudah ada, melakukan perubahan server, atau menghapus server yang sudah ada.\n   f. Setelah melakukan submit pengajuan, status pengajuan akan menunjukkan apakah sedang menunggu approval, dalam proses pengerjaan, selesai, atau terjadi error.\n   g. Setelah ", "total_len": 1921}
+[2025-10-12 12:48:17] INFO: [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+[2025-10-12 12:48:17] INFO: [33mPress CTRL+C to quit[0m
+[2025-10-12 12:48:36] INFO: 127.0.0.1 - - [12/Oct/2025 12:48:36] "OPTIONS /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:48:36] INFO: {"event": "ask_stream_received", "request_id": "5bf8ec2b-e9df-4155-8a05-cf3c88bf4ab1", "path": "/ask-stream", "method": "POST", "elapsed_ms": 0.6, "question": "siapa pembuat dokumen penggunaan self service"}
+[2025-10-12 12:48:37] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 12:48:39] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 12:48:39] INFO: 127.0.0.1 - - [12/Oct/2025 12:48:39] "POST /ask-stream HTTP/1.1" 200 -
+[2025-10-12 12:48:39] INFO: {"event": "final_answer_stream", "request_id": "5bf8ec2b-e9df-4155-8a05-cf3c88bf4ab1", "path": "/ask-stream", "method": "POST", "elapsed_ms": 3250.2, "final_preview": "Pembuat dokumen penggunaan self service adalah IT-INFRA.", "total_len": 56}
+[2025-10-12 12:52:08] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 12:52:09] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 12:52:26] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 12:52:26] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:00:43] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:00:48] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:01:26] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:01:27] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:01:51] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:01:52] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:11:22] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:11:23] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:12:30] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:12:31] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:12:59] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:12:59] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:13:35] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:13:35] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:13:51] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:13:52] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:14:09] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:14:10] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:14:26] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:14:27] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-12 13:14:45] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-12 13:14:47] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
