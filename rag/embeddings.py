@@ -12,8 +12,8 @@ load_dotenv()
 client = OpenAI()
 
 EMBED_MODEL = "text-embedding-ada-002"
-TOKEN_LIMIT = 8000   # batas aman (8192 token max)
-CHUNK_SIZE = 2000    # kira-kira 2000 token per potong
+TOKEN_LIMIT = 8000   
+CHUNK_SIZE = 2000   
 OVERLAP = 200        # potongan tumpang tindih sedikit
 
 # tokenizer bawaan OpenAI
