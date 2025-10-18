@@ -107,6 +107,12 @@ def log_debug(message: str, **kwargs):
         payload = {"message": message, **kwargs}
         logging.debug(json.dumps(payload, ensure_ascii=False))
 
+def log_token_usage(prompt_tokens: int, completion_tokens: int, total_tokens: int, endpoint: str):
+    """Log token usage ke console dan file"""
+    msg = f"[{endpoint}] Tokens - Prompt: {prompt_tokens}, Completion: {completion_tokens}, Total: {total_tokens}"
+    print(msg)
+    logging.info(msg)
+
 # ====== ROUTES ======
 @app.route("/", methods=["GET"])
 def index():
@@ -139,7 +145,28 @@ def ask():
         answer = (oa.choices[0].message.content or "").strip()
         log_debug("answer_generated", answer_len=len(answer))
 
-        response = jsonify({"answer": answer})
+        # Ekstrak token usage dari response
+        usage = oa.usage
+        prompt_tokens = usage.prompt_tokens if usage else 0
+        completion_tokens = usage.completion_tokens if usage else 0
+        total_tokens = usage.total_tokens if usage else 0
+
+        # Log token usage ke console
+        log_token_usage(prompt_tokens, completion_tokens, total_tokens, "/ask")
+
+        # Response dengan token info
+        response_data = {
+            "answer": answer,
+            "usage": {
+                "prompt_tokens": prompt_tokens,
+                "completion_tokens": completion_tokens,
+                "total_tokens": total_tokens
+            },
+            "model": OPENAI_MODEL,
+            "request_id": g.request_id
+        }
+
+        response = jsonify(response_data)
         response.headers["X-Request-ID"] = g.request_id
         return response
 
@@ -173,18 +200,34 @@ def ask_stream():
         @stream_with_context
         def generate():
             full_text = ""
+            prompt_tokens = 0
+            completion_tokens = 0
+            total_tokens = 0
+            
             try:
                 stream = client.chat.completions.create(
                     model=OPENAI_MODEL,
                     messages=messages,
                     temperature=0.1,
                     stream=True,
+                    stream_options={"include_usage": True}  # Minta usage info di stream
                 )
+                
                 for chunk in stream:
-                    choice = chunk.choices[0]
+                    # Cek apakah ada usage info (biasanya di chunk terakhir)
+                    if hasattr(chunk, 'usage') and chunk.usage:
+                        prompt_tokens = chunk.usage.prompt_tokens
+                        completion_tokens = chunk.usage.completion_tokens
+                        total_tokens = chunk.usage.total_tokens
+                    
+                    choice = chunk.choices[0] if chunk.choices else None
+                    if not choice:
+                        continue
+                    
                     delta = getattr(choice, "delta", None)
                     if not delta:
                         continue
+                    
                     piece = getattr(delta, "content", None)
                     if piece is None:
                         continue
@@ -198,6 +241,21 @@ def ask_stream():
 
             finally:
                 log_debug("stream_completed", answer_len=len(full_text))
+                
+                # Log token usage ke console
+                if total_tokens > 0:
+                    log_token_usage(prompt_tokens, completion_tokens, total_tokens, "/ask-stream")
+                
+                # Kirim usage info sebagai event terakhir sebelum done
+                yield sse_pack_json({
+                    "type": "usage",
+                    "usage": {
+                        "prompt_tokens": prompt_tokens,
+                        "completion_tokens": completion_tokens,
+                        "total_tokens": total_tokens
+                    },
+                    "model": OPENAI_MODEL
+                })
                 yield sse_pack_json({"type": "done"})
 
         resp = Response(
@@ -227,4 +285,8 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     
     print(f"🚀 Server running on http://{host}:{port}")
+    print(f"🤖 Model: {OPENAI_MODEL}")
+    print(f"📊 Token usage will be logged for each request")
+    print("-" * 60)
+    
     app.run(host=host, port=port, debug=False, threaded=True)
