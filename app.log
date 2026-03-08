@@ -78,3 +78,14 @@
 [2025-10-12 13:14:27] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
 [2025-10-12 13:14:45] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
 [2025-10-12 13:14:47] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-18 14:39:24] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-18 14:39:25] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-18 14:46:57] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-18 14:46:57] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-18 14:46:58] INFO: [/ask-stream] Tokens - Prompt: 2196, Completion: 15, Total: 2211
+[2025-10-18 14:53:27] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-18 14:53:28] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-18 14:53:35] INFO: [/ask-stream] Tokens - Prompt: 2199, Completion: 470, Total: 2669
+[2025-10-18 14:53:51] INFO: HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 200 OK"
+[2025-10-18 14:53:52] INFO: HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[2025-10-18 14:53:57] INFO: [/ask-stream] Tokens - Prompt: 2200, Completion: 321, Total: 2521
