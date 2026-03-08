@@ -207,7 +207,16 @@ def ask_stream():
             prompt_tokens = 0
             completion_tokens = 0
             total_tokens = 0
-            
+
+            # Kirim info konteks yang dikirim ke OpenAI
+            yield sse_pack_json({
+                "type": "context",
+                "docs_count": len(docs),
+                "docs": docs,
+                "model": OPENAI_MODEL,
+                "system_prompt": SYSTEM_MSG.strip()
+            })
+
             try:
                 stream = client.chat.completions.create(
                     model=OPENAI_MODEL,
