@@ -1,0 +1,33 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Environment variables (JANGAN push ke GitHub!)
+.env
+.env.*
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+
+# RAG generated files (rebuild dari dokumen, tidak perlu di-push)
+rag/doc_index.faiss
+rag/doc_store.pkl
+rag/__pycache__/
+
+# Dokumen sensitif
+rag/documents/
+
+# Log files
+*.log
+app.log
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
